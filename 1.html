@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>艾宾浩斯复习计划表 - 云同步版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .device-info {
+            background: linear-gradient(135deg, #fff3e0, #ffecb3);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .device-name {
+            font-weight: 600;
+            color: #e65100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .sync-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #9e9e9e;
+        }
+
+        .sync-indicator.success {
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        .sync-indicator.syncing {
+            background: #ff9800;
+            animation: pulse 1s infinite;
+        }
+
+        .sync-indicator.error {
+            background: #f44336;
+        }
+
+        .sync-indicator.offline {
+            background: #9e9e9e;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .last-save {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .title-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-wrapper.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input, select {
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .category-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .category-input-group input {
+            flex: 1;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #9e9e9e;
+        }
+
+        .btn-secondary:hover {
+            background: #757575;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .btn-save {
+            background: #4caf50;
+        }
+
+        .btn-save:hover {
+            background: #45a049;
+        }
+
+        .btn-sync {
+            background: #2196f3;
+        }
+
+        .btn-sync:hover {
+            background: #1976d2;
+        }
+
+        .btn-export {
+            background: #ff9800;
+        }
+
+        .btn-export:hover {
+            background: #f57c00;
+        }
+
+        .btn-import {
+            background: #9c27b0;
+        }
+
+        .btn-import:hover {
+            background: #7b1fa2;
+        }
+
+        .btn-clear {
+            background: #f44336;
+        }
+
+        .btn-clear:hover {
+            background: #d32f2f;
+        }
+
+        .btn-settings {
+            background: #607d8b;
+        }
+
+        .btn-settings:hover {
+            background: #455a64;
+        }
+
+        .categories-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .category-tag {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .category-tag .remove {
+            cursor: pointer;
+            font-weight: bold;
+            color: #4338ca;
+        }
+
+        .category-tag .remove:hover {
+            color: #312e81;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .category-filter {
+            margin-bottom: 10px;
+        }
+
+        .filter-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            position: relative;
+        }
+
+        .filter-item:hover {
+            background: #f5f5f5;
+        }
+
+        .filter-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .filter-item .today-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #ff4444;
+            border-radius: 50%;
+            margin-left: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        .filter-count {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .filter-item.active .filter-count {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .tasks-content {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            min-height: 500px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-text {
+            font-size: 18px;
+        }
+
+        .task-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .task-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .task-header {
+            padding: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .task-header.no-schedule {
+            background: #fff3e0;
+        }
+
+        .task-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .task-title-area {
+            flex: 1;
+        }
+
+        .task-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .task-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .task-categories {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .task-category-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .today-badge {
+            background: #ffeb3b;
+            color: #f57f17;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .no-schedule-badge {
+            background: #ff9800;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .task-time {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            transition: all 0.3s;
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .task-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .task-content.expanded {
+            max-height: 2000px;
+        }
+
+        .task-edit-section {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .task-edit-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .edit-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .schedule-grid {
+            padding: 20px;
+            display: grid;
+            gap: 12px;
+        }
+
+        .review-item {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .review-item:hover {
+            border-color: #667eea;
+            transform: translateX(4px);
+        }
+
+        .review-item.completed {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .review-item.overdue {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .review-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-done {
+            background: #4caf50;
+            color: white;
+        }
+
+        .badge-overdue {
+            background: #f44336;
+            color: white;
+        }
+
+        .badge-current {
+            background: #2196f3;
+            color: white;
+        }
+
+        .review-time {
+            color: #666;
+            font-size: 14px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .check-btn {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .check-btn.unchecked {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .check-btn.unchecked:hover {
+            background: #4caf50;
+            color: white;
+        }
+
+        .check-btn.checked {
+            background: #4caf50;
+            color: white;
+        }
+
+        #importFile {
+            display: none;
+        }
+
+        .info-box {
+            padding: 12px 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            border-left: 4px solid;
+        }
+
+        .info-box.cloud {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            color: #1565c0;
+        }
+
+        .info-box.offline {
+            background: #fff3e0;
+            border-color: #ff9800;
+            color: #e65100;
+        }
+
+        .info-box.success {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+
+        .btn-delete {
+            background: #f44336;
+        }
+
+        .btn-delete:hover {
+            background: #d32f2f;
+        }
+
+        .sync-guide {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .sync-guide h4 {
+            color: #2e7d32;
+            margin-bottom: 8px;
+        }
+
+        .sync-guide ul {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .sync-guide li {
+            margin-bottom: 5px;
+        }
+
+        /* Modal 样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .form-help a {
+            color: #2196f3;
+            text-decoration: none;
+        }
+
+        .form-help a:hover {
+            text-decoration: underline;
+        }
+
+        .toggle-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .toggle-label input[type="checkbox"] {
+            width: auto;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+
+            .edit-row {
+                grid-template-columns: 1fr;
+            }
+
+            .title-actions {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 设备信息栏 -->
+        <div class="device-info">
+            <div>
+                <div class="device-name">
+                    <span id="deviceIcon">💻</span>
+                    <span id="deviceName">当前设备</span>
+                </div>
+                <div class="last-save" id="lastSave">正在初始化...</div>
+            </div>
+            <div class="sync-status">
+                <span class="sync-indicator" id="syncIndicator"></span>
+                <span id="syncStatus">离线模式</span>
+            </div>
+        </div>
+
+        <div class="header">
+            <div class="title">
+                <div class="title-left">
+                    <span>📚 艾宾浩斯遗忘曲线复习计划表</span>
+                </div>
+                <div class="title-actions">
+                    <button class="btn btn-small btn-sync" onclick="manualSync()" id="manualSyncBtn">
+                        ☁️ 立即同步
+                    </button>
+                    <button class="btn btn-small btn-export" onclick="exportData()">📥 导出备份</button>
+                    <label for="importFile" class="btn btn-small btn-import" style="margin: 0;">
+                        📤 导入备份
+                    </label>
+                    <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+                    <button class="btn btn-small btn-settings" onclick="openSettings()">⚙️ 云同步设置</button>
+                    <button class="btn btn-small btn-clear" onclick="clearAllData()">🗑️ 清空数据</button>
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-wrapper">
+                    <label for="taskName">学习任务名称 *</label>
+                    <input type="text" id="taskName" placeholder="例如：背单词List1">
+                </div>
+                <div class="input-wrapper">
+                    <label for="startDate">开始日期（可选，后续也可设置）</label>
+                    <input type="date" id="startDate">
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-wrapper">
+                    <label>添加新分类</label>
+                    <div class="category-input-group">
+                        <input type="text" id="newCategory" placeholder="输入新分类名称">
+                        <button class="btn btn-small" onclick="addCategory()">添加</button>
+                    </div>
+                </div>
+                <div class="input-wrapper">
+                    <label for="categorySelect">选择分类（可多选）</label>
+                    <select id="categorySelect">
+                        <option value="">-- 选择分类 --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-wrapper full-width">
+                <label>已选择的分类</label>
+                <div class="categories-list" id="selectedCategories"></div>
+            </div>
+
+            <button class="btn" onclick="addTask()">➕ 添加学习任务</button>
+
+            <div class="info-box" id="statusInfo">
+                💡 正在检测存储模式...
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="sidebar-title">分类筛选</div>
+                <div class="category-filter" id="categoryFilter"></div>
+            </div>
+            <div class="tasks-content">
+                <div id="tasksContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置 Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">⚙️ 云同步设置</div>
+            <div class="modal-body">
+                <div class="toggle-section">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="enableCloudSync" onchange="toggleCloudSync()">
+                        <span>启用云同步功能</span>
+                    </label>
+                    <div class="form-help" style="margin-top: 8px;">
+                        关闭后将使用本地浏览器存储，适合单设备使用
+                    </div>
+                </div>
+
+                <div id="cloudSettings" style="display: none;">
+                    <div class="form-group">
+                        <label>GitHub 用户名 *</label>
+                        <input type="text" id="githubUser" placeholder="例如：pinocchio77">
+                        <div class="form-help">你的 GitHub 用户名</div>
+                    </div>
+                    <div class="form-group">
+                        <label>仓库名称 *</label>
+                        <input type="text" id="githubRepo" placeholder="例如：my-planner-">
+                        <div class="form-help">用于存储数据的仓库名（建议创建私有仓库）</div>
+                    </div>
+                    <div class="form-group">
+                        <label>GitHub Token *</label>
+                        <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx">
+                        <div class="form-help">
+                            需要 repo 权限。
+                            <a href="https://github.com/settings/tokens/new?scopes=repo&description=Ebbinghaus%20Planner" target="_blank">创建 Token →</a>
+                        </div>
+                    </div>
+                    <div style="background: #fff3e0; padding: 12px; border-radius: 8px; font-size: 13px; margin-top: 15px;">
+                        ⚠️ <strong>首次使用提示：</strong><br>
+                        1. 请确保已在 GitHub 创建好仓库<br>
+                        2. Token 需要有 repo 权限<br>
+                        3. Token 仅保存在本地浏览器，不会上传
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-small" onclick="closeSettings()">取消</button>
+                <button class="btn btn-small" onclick="saveSettings()">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== 全局变量 =====
+        let tasks = [];
+        let categories = ['英语', '数学', '编程', '阅读'];
+        let selectedTaskCategories = [];
+        let currentFilter = '';
+        let isSyncing = false;
+        let cloudSyncEnabled = localStorage.getItem('cloud_sync_enabled') === 'true';
+
+        // GitHub 配置
+        let GITHUB_CONFIG = {
+            user: localStorage.getItem('github_user') || '',
+            repo: localStorage.getItem('github_repo') || '',
+            token: localStorage.getItem('github_token') || '',
+            filePath: 'data.json'
+        };
+
+        // ===== 初始化 =====
+        window.addEventListener('DOMContentLoaded', async function() {
+            detectDevice();
+            
+            if (cloudSyncEnabled && isConfigured()) {
+                await initializeCloudMode();
+            } else {
+                initializeLocalMode();
+            }
+        });
+
+        // 云端模式初始化
+        async function initializeCloudMode() {
+            updateSyncStatus('syncing', '正在从云端加载...');
+            updateInfoBox('cloud', '☁️ 云同步模式已启用，正在连接...');
+            
+            try {
+                await loadDataFromGitHub();
+                updateSyncStatus('success', '云端同步成功');
+                updateInfoBox('success', '✅ 云同步已连接，数据自动保存到 GitHub');
+            } catch (error) {
+                console.error('云端加载失败:', error);
+                updateSyncStatus('error', '云端连接失败');
+                
+                // 尝试从本地恢复
+                if (loadDataFromLocal()) {
+                    updateInfoBox('offline', 
+                        `⚠️ 云端连接失败：${error.message}<br><br>` +
+                        '已加载本地缓存数据。你可以：<br>' +
+                        '1. 检查网络连接后点击"立即同步"<br>' +
+                        '2. 点击"云同步设置"检查配置<br>' +
+                        '3. 或继续使用离线模式（数据保存在本地）'
+                    );
+                } else {
+                    updateInfoBox('offline', 
+                        `❌ 云端连接失败：${error.message}<br><br>` +
+                        '请点击"云同步设置"检查配置，或关闭云同步使用本地模式'
+                    );
+                }
+            } finally {
+                renderAll();
+            }
+        }
+
+        // 本地模式初始化
+        function initializeLocalMode() {
+            updateSyncStatus('offline', '本地存储模式');
+            loadDataFromLocal();
+            renderAll();
+            updateInfoBox('offline', 
+                '📍 当前使用本地存储模式，数据保存在浏览器中<br><br>' +
+                '如需多设备同步，请点击"云同步设置"启用云同步功能'
+            );
+        }
+
+        function renderAll() {
+            renderCategorySelect();
+            renderSelectedCategories();
+            renderCategoryFilter();
+            renderTasks();
+        }
+
+        // 检测设备类型
+        function detectDevice() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            let deviceIcon = '💻';
+            let deviceName = '电脑端';
+            
+            if (/iphone|ipad|ipod/.test(userAgent)) {
+                deviceIcon = '📱';
+                deviceName = 'iOS设备';
+            } else if (/android/.test(userAgent)) {
+                deviceIcon = '📱';
+                deviceName = 'Android设备';
+            } else if (/windows/.test(userAgent)) {
+                deviceIcon = '💻';
+                deviceName = 'Windows电脑';
+            } else if (/macintosh|mac os/.test(userAgent)) {
+                deviceIcon = '🖥️';
+                deviceName = 'Mac电脑';
+            }
+            
+            document.getElementById('deviceIcon').textContent = deviceIcon;
+            document.getElementById('deviceName').textContent = deviceName;
+        }
+
+        // ===== 存储模式切换 =====
+        
+        function toggleCloudSync() {
+            const enabled = document.getElementById('enableCloudSync').checked;
+            document.getElementById('cloudSettings').style.display = enabled ? 'block' : 'none';
+        }
+
+        // ===== GitHub 云同步功能 =====
+        
+        function isConfigured() {
+            return GITHUB_CONFIG.user && GITHUB_CONFIG.repo && GITHUB_CONFIG.token;
+        }
+
+        async function loadDataFromGitHub() {
+            if (!isConfigured()) {
+                throw new Error('GitHub 配置未完成');
+            }
+
+            const url = `https://api.github.com/repos/${GITHUB_CONFIG.user}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.filePath}`;
+            
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `token ${GITHUB_CONFIG.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+
+            if (response.status === 404) {
+                console.log('data.json 不存在，将创建新文件');
+                document.getElementById('lastSave').textContent = '首次使用';
+                return;
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                if (response.status === 401) {
+                    throw new Error('Token 无效或已过期');
+                } else if (response.status === 403) {
+                    throw new Error('Token 权限不足，需要 repo 权限');
+                } else {
+                    throw new Error(errorData.message || `HTTP ${response.status}`);
+                }
+            }
+
+            const data = await response.json();
+            const content = decodeBase64Unicode(data.content);
+            const parsedData = JSON.parse(content);
+
+            tasks = parsedData.tasks || [];
+            categories = parsedData.categories || ['英语', '数学', '编程', '阅读'];
+            currentFilter = parsedData.currentFilter || '';
+
+            // 保存到本地作为缓存
+            saveDataToLocal();
+
+            const saveTime = new Date(parsedData.savedAt || Date.now());
+            document.getElementById('lastSave').textContent = 
+                `上次同步: ${formatDateTime(saveTime, false)} ${saveTime.getHours()}:${String(saveTime.getMinutes()).padStart(2, '0')}`;
+            
+            console.log(`✅ 成功从云端加载 ${tasks.length} 个任务`);
+        }
+
+        async function saveDataToGitHub() {
+            if (!cloudSyncEnabled || !isConfigured()) {
+                console.log('云同步未启用，使用本地存储');
+                saveDataToLocal();
+                return;
+            }
+
+            if (isSyncing) {
+                console.log('正在同步中，跳过本次保存');
+                return;
+            }
+
+            isSyncing = true;
+            updateSyncStatus('syncing', '正在同步...');
+
+            try {
+                const data = {
+                    tasks: tasks,
+                    categories: categories,
+                    currentFilter: currentFilter,
+                    savedAt: new Date().toISOString(),
+                    version: '3.0-cloud',
+                    device: detectDeviceType()
+                };
+
+                const url = `https://api.github.com/repos/${GITHUB_CONFIG.user}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.filePath}`;
+                
+                // 先获取文件的 SHA（如果存在）
+                let sha = null;
+                try {
+                    const getResponse = await fetch(url, {
+                        headers: {
+                            'Authorization': `token ${GITHUB_CONFIG.token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    if (getResponse.ok) {
+                        const fileData = await getResponse.json();
+                        sha = fileData.sha;
+                    }
+                } catch (e) {
+                    console.log('文件不存在，将创建新文件');
+                }
+
+                // 保存文件
+                const content = encodeBase64Unicode(JSON.stringify(data, null, 2));
+                const putResponse = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Update from ${detectDeviceType()} - ${new Date().toLocaleString('zh-CN')}`,
+                        content: content,
+                        sha: sha
+                    })
+                });
+
+                if (!putResponse.ok) {
+                    const errorData = await putResponse.json();
+                    throw new Error(errorData.message || '保存失败');
+                }
+
+                // 保存到本地作为缓存
+                saveDataToLocal();
+
+                updateSyncStatus('success', '云端同步成功');
+                const saveTime = new Date();
+                document.getElementById('lastSave').textContent = 
+                    `上次同步: ${formatDateTime(saveTime, false)} ${saveTime.getHours()}:${String(saveTime.getMinutes()).padStart(2, '0')}`;
+                
+                console.log('✅ 数据已同步到 GitHub');
+            } catch (error) {
+                console.error('同步失败:', error);
+                updateSyncStatus('error', '同步失败');
+                
+                // 失败时保存到本地
+                saveDataToLocal();
+                
+                // 不弹窗，只在状态栏显示
+                updateInfoBox('offline', 
+                    `⚠️ 云端同步失败：${error.message}<br><br>` +
+                    '数据已保存到本地。稍后会自动重试，或点击"立即同步"手动同步'
+                );
+            } finally {
+                isSyncing = false;
+            }
+        }
+
+        function detectDeviceType() {
+            const ua = navigator.userAgent.toLowerCase();
+            if (/iphone|ipad|ipod/.test(ua)) return 'iOS';
+            if (/android/.test(ua)) return 'Android';
+            if (/macintosh|mac os/.test(ua)) return 'Mac';
+            if (/windows/.test(ua)) return 'Windows';
+            return 'Web';
+        }
+
+        async function manualSync() {
+            if (!cloudSyncEnabled) {
+                alert('💡 云同步未启用\n\n请先点击"云同步设置"启用云同步功能');
+                return;
+            }
+
+            if (!isConfigured()) {
+                alert('⚠️ 云同步未配置\n\n请先点击"云同步设置"完成配置');
+                openSettings();
+                return;
+            }
+
+            const btn = document.getElementById('manualSyncBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ 同步中...';
+            
+            try {
+                // 先保存到云端
+                isSyncing = false; // 重置标志以允许同步
+                await saveDataToGitHub();
+                
+                // 再从云端加载
+                await loadDataFromGitHub();
+                renderAll();
+                
+                updateInfoBox('success', '✅ 云端同步成功！所有设备数据已更新');
+            } catch (error) {
+                updateInfoBox('offline', `❌ 同步失败：${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '☁️ 立即同步';
+            }
+        }
+
+        function updateSyncStatus(status, message) {
+            const indicator = document.getElementById('syncIndicator');
+            const statusText = document.getElementById('syncStatus');
+            
+            indicator.className = 'sync-indicator ' + status;
+            statusText.textContent = message;
+        }
+
+        function updateInfoBox(type, message) {
+            const infoBox = document.getElementById('statusInfo');
+            infoBox.className = 'info-box ' + type;
+            infoBox.innerHTML = message;
+        }
+
+        // ===== 本地存储功能 =====
+        
+        function saveDataToLocal() {
+            const data = {
+                tasks: tasks,
+                categories: categories,
+                currentFilter: currentFilter,
+                savedAt: new Date().toISOString(),
+                version: '3.0-hybrid'
+            };
+            
+            try {
+                localStorage.setItem('ebbinghausData', JSON.stringify(data));
+                console.log('数据已保存到本地');
+                
+                if (!cloudSyncEnabled) {
+                    const saveTime = new Date();
+                    document.getElementById('lastSave').textContent = 
+                        `本地保存: ${formatDateTime(saveTime, false)} ${saveTime.getHours()}:${String(saveTime.getMinutes()).padStart(2, '0')}`;
+                }
+            } catch (e) {
+                console.error('本地保存失败:', e);
+            }
+        }
+
+        function loadDataFromLocal() {
+            try {
+                const savedData = localStorage.getItem('ebbinghausData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    tasks = data.tasks || [];
+                    categories = data.categories || ['英语', '数学', '编程', '阅读'];
+                    currentFilter = data.currentFilter || '';
+                    
+                    const saveTime = new Date(data.savedAt);
+                    document.getElementById('lastSave').textContent = 
+                        `本地数据: ${formatDateTime(saveTime, false)} ${saveTime.getHours()}:${String(saveTime.getMinutes()).padStart(2, '0')}`;
+                    
+                    console.log(`成功从本地加载 ${tasks.length} 个任务`);
+                    return true;
+                }
+            } catch (e) {
+                console.error('从本地加载失败:', e);
+            }
+            return false;
+        }
+
+        // Base64 编码/解码（支持中文）
+        function encodeBase64Unicode(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                return String.fromCharCode('0x' + p1);
+            }));
+        }
+
+        function decodeBase64Unicode(str) {
+            return decodeURIComponent(atob(str).split('').map(c => {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+        }
+
+        // ===== 设置功能 =====
+        
+        function openSettings() {
+            document.getElementById('enableCloudSync').checked = cloudSyncEnabled;
+            document.getElementById('cloudSettings').style.display = cloudSyncEnabled ? 'block' : 'none';
+            document.getElementById('githubUser').value = GITHUB_CONFIG.user;
+            document.getElementById('githubRepo').value = GITHUB_CONFIG.repo;
+            document.getElementById('githubToken').value = GITHUB_CONFIG.token;
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        async function saveSettings() {
+            const enableSync = document.getElementById('enableCloudSync').checked;
+            
+            if (enableSync) {
+                const user = document.getElementById('githubUser').value.trim();
+                const repo = document.getElementById('githubRepo').value.trim();
+                const token = document.getElementById('githubToken').value.trim();
+
+                if (!user || !repo || !token) {
+                    alert('请填写所有必填字段');
+                    return;
+                }
+
+                GITHUB_CONFIG.user = user;
+                GITHUB_CONFIG.repo = repo;
+                GITHUB_CONFIG.token = token;
+
+                localStorage.setItem('github_user', user);
+                localStorage.setItem('github_repo', repo);
+                localStorage.setItem('github_token', token);
+            }
+
+            cloudSyncEnabled = enableSync;
+            localStorage.setItem('cloud_sync_enabled', enableSync);
+
+            closeSettings();
+            
+            if (enableSync && isConfigured()) {
+                alert('✅ 设置已保存！\n\n正在连接云端...');
+                await initializeCloudMode();
+            } else {
+                alert('✅ 设置已保存！');
+                initializeLocalMode();
+            }
+        }
+
+        // ===== 分类管理 =====
+        
+        function addCategory() {
+            const input = document.getElementById('newCategory');
+            const category = input.value.trim();
+            
+            if (!category) {
+                alert('请输入分类名称');
+                return;
+            }
+            
+            if (categories.includes(category)) {
+                alert('该分类已存在');
+                return;
+            }
+            
+            categories.push(category);
+            input.value = '';
+            renderCategorySelect();
+            renderCategoryFilter();
+            
+            if (cloudSyncEnabled) {
+                saveDataToGitHub();
+            } else {
+                saveDataToLocal();
+            }
+        }
+
+        function removeCategory(category) {
+            if (!confirm(`确定删除分类"${category}"吗？\n\n注意：该分类会从所有任务中移除。`)) {
+                return;
+            }
+
+            categories = categories.filter(c => c !== category);
+            selectedTaskCategories = selectedTaskCategories.filter(c => c !== category);
+            
+            tasks.forEach(task => {
+                task.categories = task.categories.filter(c => c !== category);
+            });
+            
+            if (currentFilter === category) {
+                currentFilter = '';
+            }
+            
+            renderCategorySelect();
+            renderSelectedCategories();
+            renderCategoryFilter();
+            renderTasks();
+            
+            if (cloudSyncEnabled) {
+                saveDataToGitHub();
+            } else {
+                saveDataToLocal();
+            }
+        }
+
+        function selectCategory() {
+            const select = document.getElementById('categorySelect');
+            const category = select.value;
+            
+            if (category && !selectedTaskCategories.includes(category)) {
+                selectedTaskCategories.push(category);
+                renderSelectedCategories();
+            }
+            
+            select.value = '';
+        }
+
+        function removeSelectedCategory(category) {
+            selectedTaskCategories = selectedTaskCategories.filter(c => c !== category);
+            renderSelectedCategories();
+        }
+
+        function renderCategorySelect() {
+            const select = document.getElementById('categorySelect');
+            select.innerHTML = '<option value="">-- 选择分类 --</option>';
+            categories.forEach(cat => {
+                select.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+        }
+
+        function renderSelectedCategories() {
+            const container = document.getElementById('selectedCategories');
+            if (selectedTaskCategories.length === 0) {
+                container.innerHTML = '<span style="color: #999;">未选择分类</span>';
+            } else {
+                container.innerHTML = selectedTaskCategories.map(cat => `
+                    <div class="category-tag">
+                        <span>${cat}</span>
+                        <span class="remove" onclick="removeSelectedCategory('${cat}')">×</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function renderCategoryFilter() {
+            const container = document.getElementById('categoryFilter');
+            const taskCountByCategory = {};
+            const todayTasksByCategory = {};
+            
+            categories.forEach(cat => {
+                const categoryTasks = tasks.filter(task => task.categories.includes(cat));
+                taskCountByCategory[cat] = categoryTasks.length;
+                todayTasksByCategory[cat] = categoryTasks.some(task => hasTodayReview(task));
+            });
+            
+            const hasAnyTodayReview = tasks.some(task => hasTodayReview(task));
+            
+            container.innerHTML = `
+                <div class="filter-item ${currentFilter === '' ? 'active' : ''}" 
+                     onclick="setFilter('')">
+                    <span style="display: flex; align-items: center;">
+                        全部任务
+                        ${hasAnyTodayReview ? '<span class="today-indicator"></span>' : ''}
+                    </span>
+                    <span class="filter-count">${tasks.length}</span>
+                </div>
+                ${categories.map(cat => `
+                    <div class="filter-item ${currentFilter === cat ? 'active' : ''}" 
+                         onclick="setFilter('${cat}')">
+                        <span style="display: flex; align-items: center;">
+                            ${cat}
+                            ${todayTasksByCategory[cat] ? '<span class="today-indicator"></span>' : ''}
+                        </span>
+                        <span class="filter-count">${taskCountByCategory[cat] || 0}</span>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function setFilter(category) {
+            currentFilter = category;
+            renderCategoryFilter();
+            renderTasks();
+        }
+
+        // ===== 任务管理 =====
+        
+        function addTask() {
+            const nameInput = document.getElementById('taskName');
+            const dateInput = document.getElementById('startDate');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('请输入学习任务名称');
+                return;
+            }
+            
+            const task = {
+                id: Date.now(),
+                name: name,
+                startTime: dateInput.value || null,
+                categories: [...selectedTaskCategories],
+                schedule: null,
+                expanded: false
+            };
+            
+            if (task.startTime) {
+                task.schedule = generateSchedule(new Date(task.startTime));
+            }
+            
+            tasks.unshift(task);
+            
+            nameInput.value = '';
+            dateInput.value = '';
+            selectedTaskCategories = [];
+            
+            renderSelectedCategories();
+            renderCategoryFilter();
+            renderTasks();
+            
+            if (cloudSyncEnabled) {
+                saveDataToGitHub();
+            } else {
+                saveDataToLocal();
+            }
+        }
+
+        function generateSchedule(startDate) {
+            const intervals = [
+                { minutes: 5, label: '第1次复习 (5分钟后)' },
+                { minutes: 30, label: '第2次复习 (30分钟后)' },
+                { hours: 12, label: '第3次复习 (12小时后)' },
+                { days: 1, label: '第4次复习 (1天后)' },
+                { days: 2, label: '第5次复习 (2天后)' },
+                { days: 4, label: '第6次复习 (4天后)' },
+                { days: 7, label: '第7次复习 (7天后)' },
+                { days: 15, label: '第8次复习 (15天后)' },
+                { days: 30, label: '第9次复习 (30天后)' }
+            ];
+            
+            return intervals.map(interval => {
+                const reviewTime = new Date(startDate);
+                
+                if (interval.minutes) {
+                    reviewTime.setMinutes(reviewTime.getMinutes() + interval.minutes);
+                } else if (interval.hours) {
+                    reviewTime.setHours(reviewTime.getHours() + interval.hours);
+                } else if (interval.days) {
+                    reviewTime.setDate(reviewTime.getDate() + interval.days);
+                }
+                
+                return {
+                    time: reviewTime,
+                    label: interval.label,
+                    checked: false
+                };
+            });
+        }
+
+        function updateTaskDate(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const dateInput = document.getElementById(`edit-date-${taskId}`);
+            const newDate = dateInput.value;
+            
+            if (!newDate) {
+                alert('请选择开始日期');
+                return;
+            }
+            
+            task.startTime = newDate;
+            task.schedule = generateSchedule(new Date(newDate));
+            
+            renderTasks();
+            
+            if (cloudSyncEnabled) {
+                saveDataToGitHub();
+            } else {
+                saveDataToLocal();
+            }
+            
+            alert(task.schedule ? '复习计划已更新！' : '复习计划已生成！');
+        }
+
+        function updateTaskCategories(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const select = document.getElementById(`edit-cat-${taskId}`);
+            const category = select.value;
+            
+            if (category && !task.categories.includes(category)) {
+                task.categories.push(category);
+                renderCategoryFilter();
+                renderTasks();
+                
+                if (cloudSyncEnabled) {
+                    saveDataToGitHub();
+                } else {
+                    saveDataToLocal();
+                }
+            }
+            
+            select.value = '';
+        }
+
+        function removeTaskCategory(taskId, category) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            task.categories = task.categories.filter(c => c !== category);
+            renderCategoryFilter();
+            renderTasks();
+            
+            if (cloudSyncEnabled) {
+                saveDataToGitHub();
+            } else {
+                saveDataToLocal();
+            }
+        }
+
+        function deleteTask(taskId) {
+            if (confirm('确定要删除这个学习任务吗？')) {
+                tasks = tasks.filter(t => t.id !== taskId);
+                renderCategoryFilter();
+                renderTasks();
+                
+                if (cloudSyncEnabled) {
+                    saveDataToGitHub();
+                } else {
+                    saveDataToLocal();
+                }
+            }
+        }
+
+        function toggleTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.expanded = !task.expanded;
+                renderTasks();
+            }
+        }
+
+        function toggleCheck(taskId, reviewIndex) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task && task.schedule) {
+                task.schedule[reviewIndex].checked = !task.schedule[reviewIndex].checked;
+                renderTasks();
+                
+                if (cloudSyncEnabled) {
+                    saveDataToGitHub();
+                } else {
+                    saveDataToLocal();
+                }
+            }
+        }
+
+        // ===== 辅助函数 =====
+        
+        function formatDateTime(date, includeTime = true) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            
+            if (!includeTime) {
+                return `${year}-${month}-${day}`;
+            }
+            
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}`;
+        }
+
+        function isOverdue(date) {
+            return new Date(date) < new Date();
+        }
+
+        function hasTodayReview(task) {
+            if (!task.schedule) return false;
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            return task.schedule.some(review => {
+                const reviewDate = new Date(review.time);
+                return reviewDate >= today && reviewDate < tomorrow && !review.checked;
+            });
+        }
+
+        function getFilteredTasks() {
+            if (currentFilter === '') {
+                return tasks;
+            }
+            return tasks.filter(task => task.categories.includes(currentFilter));
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasksContainer');
+            const filteredTasks = getFilteredTasks();
+            
+            if (filteredTasks.length === 0) {
+                const message = currentFilter 
+                    ? `当前分类"${currentFilter}"下没有任务`
+                    : '还没有复习计划，请添加一个学习任务';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📅</div>
+                        <div class="empty-text">${message}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredTasks.map(task => {
+                const hasToday = hasTodayReview(task);
+                const hasSchedule = task.schedule !== null;
+                
+                let scheduleHtml = '';
+                if (hasSchedule) {
+                    scheduleHtml = task.schedule.map((review, index) => {
+                        const overdue = isOverdue(review.time);
+                        const itemClass = review.checked ? 'completed' : (overdue ? 'overdue' : 'pending');
+                        
+                        let badge = '';
+                        if (review.checked) {
+                            badge = '<span class="status-badge badge-done">✓ 已完成</span>';
+                        } else if (overdue) {
+                            badge = '<span class="status-badge badge-overdue">已过期</span>';
+                        } else if (index === 0) {
+                            badge = '<span class="status-badge badge-current">当前</span>';
+                        }
+
+                        return `
+                            <div class="review-item ${itemClass}">
+                                <div class="review-header">
+                                    <div class="review-label">${review.label}</div>
+                                    ${badge}
+                                </div>
+                                <div class="review-time">${formatDateTime(review.time, false)}</div>
+                                <button class="check-btn ${review.checked ? 'checked' : 'unchecked'}" 
+                                        onclick="toggleCheck(${task.id}, ${index})">
+                                    ${review.checked ? '✓ 已打卡' : '打卡'}
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                const categoriesBadges = task.categories.map(cat => 
+                    `<span class="task-category-badge">${cat}</span>`
+                ).join('');
+
+                const editCategoriesTags = task.categories.map(cat => 
+                    `<div class="category-tag">
+                        <span>${cat}</span>
+                        <span class="remove" onclick="removeTaskCategory(${task.id}, '${cat}')">×</span>
+                    </div>`
+                ).join('');
+
+                const categoryOptions = categories.map(cat => 
+                    `<option value="${cat}">${cat}</option>`
+                ).join('');
+
+                return `
+                    <div class="task-card">
+                        <div class="task-header ${!hasSchedule ? 'no-schedule' : ''}" onclick="toggleTask(${task.id})">
+                            <div class="task-header-content">
+                                <div class="task-title-area">
+                                    <div class="task-title-row">
+                                        <div class="task-name">${task.name}</div>
+                                        ${hasToday ? '<span class="today-badge">今日有复习</span>' : ''}
+                                        ${!hasSchedule ? '<span class="no-schedule-badge">未生成计划</span>' : ''}
+                                    </div>
+                                    <div class="task-categories">
+                                        ${categoriesBadges}
+                                    </div>
+                                    <div class="task-time" style="margin-top: 8px;">
+                                        ${task.startTime ? '🕐 开始时间: ' + formatDateTime(new Date(task.startTime), false) : '⚠️ 未设置开始时间'}
+                                    </div>
+                                </div>
+                                <div class="task-actions">
+                                    <button class="icon-btn" onclick="event.stopPropagation(); deleteTask(${task.id})" title="删除任务">
+                                        🗑️
+                                    </button>
+                                    <button class="icon-btn">
+                                        ${task.expanded ? '▲' : '▼'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="task-content ${task.expanded ? 'expanded' : ''}">
+                            <div class="task-edit-section">
+                                <div class="task-edit-title">📝 编辑任务信息</div>
+                                <div class="edit-row">
+                                    <div class="input-wrapper">
+                                        <label>修改开始日期</label>
+                                        <input type="date" id="edit-date-${task.id}" value="${task.startTime || ''}">
+                                    </div>
+                                    <div class="input-wrapper">
+                                        <label style="opacity: 0;">占位</label>
+                                        <button class="btn btn-small" onclick="updateTaskDate(${task.id})">
+                                            ${hasSchedule ? '🔄 更新计划' : '✨ 生成计划'}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="input-wrapper">
+                                    <label>修改分类</label>
+                                    <select id="edit-cat-${task.id}" onchange="updateTaskCategories(${task.id})">
+                                        <option value="">-- 添加分类 --</option>
+                                        ${categoryOptions}
+                                    </select>
+                                    <div class="categories-list" style="margin-top: 10px;">
+                                        ${editCategoriesTags}
+                                    </div>
+                                </div>
+                                ${!hasSchedule ? `
+                                    <div style="margin-top: 15px;">
+                                        <button class="btn btn-small btn-delete" onclick="deleteTask(${task.id})">
+                                            🗑️ 删除此任务
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            ${hasSchedule ? `
+                                <div class="schedule-grid">
+                                    ${scheduleHtml}
+                                </div>
+                            ` : '<div style="text-align: center; padding: 20px; color: #999;">请设置开始日期并生成复习计划</div>'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ===== 数据导入导出 =====
+        
+        function exportData() {
+            const data = {
+                tasks: tasks,
+                categories: categories,
+                exportedAt: new Date().toISOString(),
+                version: '3.0-hybrid'
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `复习计划备份_${formatDateTime(new Date(), false).replace(/:/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('✅ 数据已导出为本地备份！');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (tasks.length > 0) {
+                        if (!confirm('⚠️ 导入数据会覆盖当前的所有任务，确定要继续吗？')) {
+                            event.target.value = '';
+                            return;
+                        }
+                    }
+                    
+                    tasks = data.tasks || [];
+                    categories = data.categories || ['英语', '数学', '编程', '阅读'];
+                    currentFilter = '';
+                    selectedTaskCategories = [];
+                    
+                    renderAll();
+                    
+                    if (cloudSyncEnabled) {
+                        saveDataToGitHub();
+                        alert(`✅ 成功导入 ${tasks.length} 个任务！\n\n数据将自动同步到云端。`);
+                    } else {
+                        saveDataToLocal();
+                        alert(`✅ 成功导入 ${tasks.length} 个任务！`);
+                    }
+                } catch (error) {
+                    alert('❌ 导入失败：文件格式错误！');
+                    console.error('导入错误:', error);
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ 确定要清空所有数据吗？此操作不可恢复！\n\n建议先导出备份。')) {
+                if (confirm('再次确认：真的要清空所有任务和分类吗？')) {
+                    tasks = [];
+                    categories = ['英语', '数学', '编程', '阅读'];
+                    currentFilter = '';
+                    selectedTaskCategories = [];
+                    
+                    renderAll();
+                    
+                    if (cloudSyncEnabled) {
+                        saveDataToGitHub();
+                    } else {
+                        saveDataToLocal();
+                    }
+                    
+                    alert('✅ 所有数据已清空！');
+                }
+            }
+        }
+
+        // ===== 事件监听 =====
+        
+        document.getElementById('categorySelect').addEventListener('change', selectCategory);
+        
+        // 页面关闭前保存
+        window.addEventListener('beforeunload', function() {
+            if (cloudSyncEnabled && isConfigured()) {
+                saveDataToGitHub();
+            } else {
+                saveDataToLocal();
+            }
+        });
+
+        // 定期自动同步（每60秒）
+        setInterval(function() {
+            if (cloudSyncEnabled && isConfigured() && !isSyncing) {
+                saveDataToGitHub();
+            }
+        }, 60000);
+    </script>
+</body>
+</html>
